@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+<title>Lyv - {% block title %}{% endblock %}</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/style.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+</head>
+<body>
+	{% block javascript %}{% endblock %}
+<div id='headbox'><img src='/static/logo.png'><a href='http://golyv.com/'>Homepage</a><a href='/post'>Post event</a></div>
+<div id="content">
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>

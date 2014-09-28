@@ -1,0 +1,49 @@
+{% extends "header.html" %}
+{% block title %}Login{% endblock %}
+{% block javascript %}
+<script>
+function sendObject(object){
+	var json_object = JSON.stringify(object);
+	var success_func = function(data){
+		if(data.status == 'success'){
+			window.location.assign('/' + $('#username').val() +'/home');
+		}
+		else{
+			alert('login failed');
+		}
+		
+	}
+	var fail_func = function(data){
+		alert(JSON.stringify(data));
+	}
+	$.ajax({
+		url:'http://192.168.1.77/login',
+		type:'POST',
+		dataType:'json',
+		crossDomain:false,
+		jsonp:false,
+		jsonpCallback:false,
+		contentType: 'application/json',
+		data: json_object,
+		success: success_func,
+		error: fail_func
+
+	});
+}
+$(document).ready(function(){
+	$('#login').click(function(){
+		var loginOb = new Object;
+		loginOb.username = $('#username').val();
+		loginOb.password = $('#password').val();
+		sendObject(loginOb);
+	});
+});
+</script>
+{% endblock %}
+{% block content %}
+<table>
+<tr><td>Username:</td><td><input type='text' id='username'></td></tr>
+<tr><td>Password:</td><td><input type='password' id='password'</td></tr>
+</table>
+<input type='submit' value='Log In' id='login'>
+{% endblock %}

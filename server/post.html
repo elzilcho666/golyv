@@ -1,0 +1,58 @@
+<html>
+<head>
+<title>Test form</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<script>
+	var server = "127.0.0.1:5000";
+	var sendObject = function(object){
+		$.ajax({
+			url:"http://" + server + "/newevnt",
+			type:"POST",
+			crossDomain:true,
+			dataType:"jsonp",
+			data:JSON.stringify(object),
+			success: function(data){
+				alert(data);
+			}
+		});
+	}
+	$(document).ready(function(){
+		$('#send').click(function(){
+			var eventob = new Object();
+			eventob.time = $('#time').val();
+			eventob.date = $('#date').val();
+			eventob.title = $('#title').val();
+			eventob.price= $('#price').val();
+			eventob.description = $('#description').val();
+			eventob.host = $('#host').val();
+			eventob.event_type = $('#event_type').val();
+			var addressstring = "";
+			addressstring += $('#address1').val() + ", ";
+			addressstring += $('#address2').val() + ", ";
+			addressstring += $('#town').val() + ", ";
+			addressstring += $('#postcode').val()
+			eventob.address = addressstring;
+			sendObject(eventob);
+		});
+	});
+</script>
+Time:<input type="text" id="time"><br />
+Date:<input type="text" id="date"><br />
+Title:<input type="text" id="title"><br />
+Price: $<input type="text" id="price"><br />
+Description:<textarea id="description"></textarea><br />
+Host:<input type="text" id="host"><br />
+Event Type:<select id="event_type">
+	<option value="private">private</option>
+	<option value="public">public</option>
+</select><br>
+Address 1:<input type="text" id="address1"><br />
+Address 2:<input type="text" id="address2"><br />
+Town:<input type="text" id="town"><br />
+Post Code:<input type="text" id="postcode"><br />
+<input type="submit" id="send">
+</body>
+</html>
+

@@ -1,0 +1,10 @@
+{% extends 'header.html' %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<table>
+<strong><tr><td>Title</td><td>Description</td><td>Host</td><td>Event Type</td></tr></strong>
+{% for event in events %}
+<tr><td><a href="/event/{{ event['id'] }}">{{ event['title'] }}</a></td><td>{{ event['description']}}</td><td>{{ event['host'] }}</td><td>{{ event['event_type'] }}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

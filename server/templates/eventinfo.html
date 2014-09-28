@@ -1,0 +1,12 @@
+{% extends 'header.html' %}
+{% block title %}Event - {{ event['title'] }}{% endblock %}
+{% block content %}
+<table>
+<tr><td>Event Name:</td><td><strong>{{ event['title'] }}</strong></td></tr>
+<tr><td>Event Time:</td><td>{{ event['time'] }} - {{ event['event_day'] }}/{{ event['event_month'] }}/{{ event['event_year'] }}  </td></tr>
+<tr><td>Description:</td><td>{{ event['description'] }}</td></tr>
+<tr><td>Price</td><td>&#163;{{ event['price'] }}</td></tr>
+<tr><td>Host:</td><td>{{ event['host'] }}</td></tr>
+<tr><td>Address:</td><td>{{ event['address'] }}</td></tr>
+</table>
+{% endblock %}
