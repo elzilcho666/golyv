@@ -251,24 +251,30 @@ def settings_caption(user):
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(user, challenge_key)
 	if challenge_token['status'] == 'success':
-		return render_template('')
+		return render_template('settingscaption.html')
 	return render_template('login.html')
 @app.route('/<string:user>/settings/editprofile')
-def settings_(user):
+def settings_editprofile(user):
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(user, challenge_key)
 	if challenge_token['status'] == 'success':
 		return render_template('')
 	return render_template('login.html')
-@app.route('/<string:user>/settings/closeaccount')
-def settings_(user):
+@app.route('/<string:user>/settings/closeaccount', methods=['GET', 'POST'])
+def settings_closeaccount(user):
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(user, challenge_key)
 	if challenge_token['status'] == 'success':
-		return render_template('')
+		if request.method == 'POST':
+			json = request.json
+			if u.verify_password(user, json['password']):
+				u.cancel_membership(user, json['password'])
+				return 'account deleted'
+			return 'account not deleted'
+		return render_template('settingscancel.html')
 	return render_template('login.html')
 @app.route('/<string:user>/settings/accountclosed')
-def settings_(user):
+def settings_closedaccount(user):
 	render_template('')
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=80, debug=True) #, ssl_context=context
