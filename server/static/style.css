@@ -4,6 +4,16 @@
 	background-color: #3B78C1;
 	
 }
+#headbox a:link,
+#headbox a:active,
+#headbox a:visited {
+	color:#ffffff;
+	text-decoration: none;
+}
+#headbox a:hover {
+	color:#000000;
+	text-decoration: underline;
+}
 #content{
 	padding-left: 25px;
 	padding-top: 25px;

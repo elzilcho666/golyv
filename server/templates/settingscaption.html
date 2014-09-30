@@ -1,5 +1,25 @@
 {% extends 'header.html' %}
 {% block title %}Change caption{% endblock %}
+{% block javascript %}
+<script>
+$(document).ready(function(){
+	$('#submit').click(function(){
+		var captionob = new Object;
+		captionob.caption = $('#caption').val();
+		var redirect = function(){
+			window.location.assign('/');
+		}
+		$.ajax({
+			url:'{{ settings['server'] }}/{{ settings['username'] }}/settings/caption',
+			type:'POST',
+			dataType:'json',
+			data:JSON.stringify(captionob),
+			success:redirect
+		});
+	});
+});
+</script>
+{% endblock %}
 {% block content %}
 <table>
 <tr><td>Enter new caption:</td><td><input type='text' id='caption'</td></tr>

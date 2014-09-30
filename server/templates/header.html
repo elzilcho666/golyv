@@ -9,7 +9,8 @@
 </head>
 <body>
 	{% block javascript %}{% endblock %}
-<div id='headbox'><img src='/static/logo.png'><a href='http://golyv.com/'>Homepage</a><a href='/post'>Post event</a></div>
+
+<div id='headbox'><table><tr><td><img src='/static/logo.png'></td><!--<td><a href='http://golyv.com/'>Homepage</a></td>-->{% if settings['loggedin'] %}<td><a href='/post'>Post Event</a></td><td><a href='/viewevents'>View Events</a></td><td><a href='/{{ settings['username'] }}/settings'>{{ settings['username'] }}</a></td><td><a href='/logout'>Log Out</a></tr></table>{% else %}<td><a href='/register'>Register</a></td><td><a href='/login'>Login</a></td></tr></table>{% endif %} </div>
 <div id="content">
 {% block content %}{% endblock %}
 </div>

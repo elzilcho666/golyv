@@ -30,7 +30,7 @@
 			eventob.title = $('#title').val();
 			eventob.price= $('#price').val();
 			eventob.description = $('#description').val();
-			eventob.host = $('#host').val();
+			eventob.host = "{{ settings['username'] }}";
 			eventob.event_type = $('#event_type').val();
 			eventob.address1 = $('#address1').val() + ", ";
 			eventob.address2 = $('#address2').val() + ", ";
@@ -138,7 +138,7 @@
 <tr><td>Title:</td><td><input type="text" id="title"></td></tr>
 <tr><td>Price:</td><td><input type="text" id="price"></td></tr>
 <tr><td>Description:</td><td><textarea id="description" rows="10" cols="60"></textarea></td></tr>
-<tr><td>Host:</td><td><input type="text" id="host"></td></tr>
+<tr><td>Host:</td><td>{{ settings['username'] }}</td></tr>
 <tr><td>Event Type:</td><td><select id="event_type">
 	<option value="private">private</option>
 	<option value="public">public</option>

@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, make_response
 from libadam.db import adamDB
 from OpenSSL import SSL
 import libadam.simple_enc
-import json, MySQLdb, magic, hashlib, datetime
+import json, MySQLdb, hashlib, datetime
 enc = libadam.simple_enc.simple_encryption()
 class settings:
 	def __init__(self):
@@ -14,6 +14,15 @@ class settings:
 		self.sslkey = settings['sslkey']
 		self.sslcert = settings['sslcert']
 		self.db = settings['db']
+		self.url = settings['url']
+		self.server_port = settings['www_port']
+		self.ssl = settings['ssl']
+	def websettings(self, loggedin=False, username=''):
+		websettings = {}
+		websettings['server'] = self.url
+		websettings['loggedin'] = loggedin
+		websettings['username'] = username
+		return websettings
 s = settings()
 '''
 context = SSL.Context(SSL.SSLv23_METHOD)
@@ -40,15 +49,19 @@ class events(adamDB):
 			result['id'] = row[0]
 			result['title'] = row[1]
 			result['time'] = row[2]
-			result['date'] = row[3]
-			result['price'] = row[4]
-			result['description'] = row[5]
-			result['image_hash'] = row[6]
-			result['host'] = row[7]
-			result['event_type'] = row[8]
-			result['address'] = row[9]
-			result['lat'] = row[10]
-			result['lon'] = row[11]
+			result['date'] = "%s/%s/%s" % (row[3], row[4], row[5])
+			result['price'] = row[6]
+			result['description'] = row[7]
+			result['image_hash'] = row[8]
+			result['host'] = row[9]
+			result['event_type'] = row[10]
+			result['address1'] = row[11]
+			result['address2'] = row[12]
+			result['town'] = row[13]
+			result['postcode'] = row[14]
+			result['country'] = row[15]
+			result['lat'] = row[16]
+			result['lon'] = row[17]
 			results.append(result)
 		return results
 	def event_info(self, event_id):
@@ -57,17 +70,17 @@ class events(adamDB):
 			result = {}
 			result['title'] = row[1]
 			result['time'] = row[2]
-			result['date'] = row[3]
-			result['price'] = row[4]
-			result['description'] = row[5]
-			result['image'] = row[6]
-			result['host'] = row[7]
-			result['address'] =row[9]
+			result['date'] = "%s/%s/%s" % (row[3], row[4], row[5])
+			result['price'] = row[6]
+			result['description'] = row[7]
+			result['image'] = row[8]
+			result['host'] = row[9]
+			result['address'] =row[11] + ', ' + row[12] + ', ' + row[13] + ', ' + row[14] + ', ' + row[15]
 			return result
 	def listevents_json(self):
 		return json.dumps(self.listevents())
 	def addevent(self, time, event_day, event_month, event_year, title, price, description, image, host, event_type, address1='', address2='', town='', postcode='', country='', lat=0, lon=0):
-		sql = "INSERT INTO events(time, event_day, event_month, event_year, title, price, description, image_hash, host, event_type, address, lat, lon) VALUES('%s', '%s', %s, %s, %s, %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, %s);" % (self.sanitize(time), self.sanitize(event_day), self.sanitize(event_month), self.sanitize(event_year), self.sanitize(title), self.sanitize(price), self.sanitize(description), self.sanitize(image), self.sanitize(host), self.sanitize(event_type), self.sanitize(address1), self.sanitize(address2), self.sanitize(town), self.sanitize(postcode), self.sanitize(country), self.sanitize(lat), self.sanitize(lon))
+		sql = "INSERT INTO events(time, event_day, event_month, event_year, title, price, description, image_hash, host, event_type, address1, address2, town, postcode, country, lat, lon) VALUES('%s', %s, %s, %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, %s);" % (self.sanitize(time), self.sanitize(event_day), self.sanitize(event_month), self.sanitize(event_year), self.sanitize(title), self.sanitize(price), self.sanitize(description), self.sanitize(image), self.sanitize(host), self.sanitize(event_type), self.sanitize(address1), self.sanitize(address2), self.sanitize(town), self.sanitize(postcode), self.sanitize(country), self.sanitize(lat), self.sanitize(lon))
 		print sql
 		self.execute(sql, True) 
 		return 'done'
@@ -145,7 +158,12 @@ u = users(s.ip, s.port, s.user, s.password, s.db)
 #e.addevent('4:00pm', '21/06/1991', 'My Birthday', '$24', 'Massive birthday bash', 'no image', 'Adam Jeanes', 'Private', '208 South Victoria Road, Dundee, DD1 3BF')
 @app.route('/')
 def index():
-	return render_template('index.html')
+	user = request.cookies.get('username')
+	challenge_key = request.cookies.get('challenge_key')
+	challenge_token = u.verify_challenge(user, challenge_key)
+	if challenge_token['status'] == 'success':
+		return render_template('index.html', settings=s.websettings(True, user))
+	return render_template('login.html', settings=s.websettings())
 @app.route('/img', methods=['POST'])
 def image():
 	imgfile = request.files['file']
@@ -155,8 +173,8 @@ def post():
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(username, challenge_key)
 	if challenge_token['status'] == 'success':
-		return render_template('post.html')
-	return render_template('login.html')
+		return render_template('post.html', settings=s.websettings(True, username))
+	return render_template('login.html', settings=s.websettings())
 @app.route('/evnts')
 def newevents():
 	return e.listevents_json()
@@ -166,16 +184,16 @@ def viewevents():
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(username, challenge_key)
 	if challenge_token['status'] == 'success':
-		return render_template('viewevents.html', events=e.listevents())
-	return render_template('login.html')
+		return render_template('viewevents.html', events=e.listevents(), settings=s.websettings(True, username))
+	return render_template('login.html', settings=s.websettings())
 @app.route('/event/<int:event_id>')
 def view_event(event_id):
 	username = request.cookies.get('username')
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(username, challenge_key)
 	if challenge_token['status'] == 'success':
-		return render_template('eventinfo.html', event=e.event_info(event_id))
-	return render_template('login.html')
+		return render_template('eventinfo.html', event=e.event_info(event_id), settings=s.websettings(True, username))
+	return render_template('login.html', settings=s.websettings())
 @app.route('/newevnt', methods=['POST'])
 def newevent():
 	appdataob = request.json
@@ -205,12 +223,13 @@ def register():
 		
 		return 'not implemented yet'
 	else:
-		return render_template('register.html')
+		return render_template('register.html', settings=s.websettings())
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
+	
 	if request.method == 'POST':
-		login_token = u.login(request.json['username'], request.json['password'])
+		user = request.json['username']
+		login_token = u.login(user, request.json['password'])
 		if login_token['status'] == 'success':
 			print 'successful login for %s' % (request.json['username'])
 			response = make_response(json.dumps(login_token))
@@ -220,22 +239,22 @@ def login():
 		print 'failed login'
 		return json.dumps(login_token)
 	else:
-		return render_template('login.html')
+		return render_template('login.html', settings=s.websettings())
 @app.route('/donereg')
 def done_registration():
-	return render_template('donereg.html')
+	return render_template('donereg.html', settings=s.websettings())
 @app.route('/<string:username>/home')
 def homepage(username):
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token_result = u.verify_challenge(username, challenge_key)
 	if challenge_token_result['status'] == 'success':
-		return render_template('home.html')
+		return render_template('home.html', settings=s.websettings(True, username))
 	else:
-		return render_template('login.html')
+		return render_template('login.html', settings=s.websettings())
 	return json.dumps(challenge_token_result)
 @app.route('/logout')
 def logout():
-	response = make_response(render_template('logout.html'))
+	response = make_response(render_template('logout.html', settings=s.websettings()))
 	response.set_cookie('challenge_key', '', expires=0)
 	response.set_cookie('username', '', expires=0)
 	return response
@@ -244,22 +263,22 @@ def settings_main(user):
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(user, challenge_key)
 	if challenge_token['status'] == 'success':
-		return render_template('settingsmain.html')
-	return render_template('login.html')
+		return render_template('settingsmain.html', settings=s.websettings(True, user) )
+	return render_template('login.html', settings=s.websettings())
 @app.route('/<string:user>/settings/caption')
 def settings_caption(user):
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(user, challenge_key)
 	if challenge_token['status'] == 'success':
-		return render_template('settingscaption.html')
-	return render_template('login.html')
+		return render_template('settingscaption.html', settings=s.websettings(True, user))
+	return render_template('login.html', settings=s.websettings())
 @app.route('/<string:user>/settings/editprofile')
 def settings_editprofile(user):
 	challenge_key = request.cookies.get('challenge_key')
 	challenge_token = u.verify_challenge(user, challenge_key)
 	if challenge_token['status'] == 'success':
-		return render_template('')
-	return render_template('login.html')
+		return render_template('', settings=s.websettings(True, user))
+	return render_template('login.html', settings=s.websettings())
 @app.route('/<string:user>/settings/closeaccount', methods=['GET', 'POST'])
 def settings_closeaccount(user):
 	challenge_key = request.cookies.get('challenge_key')
@@ -271,12 +290,15 @@ def settings_closeaccount(user):
 				u.cancel_membership(user, json['password'])
 				return 'account deleted'
 			return 'account not deleted'
-		return render_template('settingscancel.html')
-	return render_template('login.html')
+		return render_template('settingscancel.html', settings=s.websettings(True, user))
+	return render_template('login.html', settings=s.websettings())
 @app.route('/<string:user>/settings/accountclosed')
 def settings_closedaccount(user):
-	render_template('')
+	response = make_response(render_template('closedaccount.html', settings=s.websettings()))
+	response.set_cookie('challenge_key', '', expires=0)
+	response.set_cookie('username', '', expires=0)
+	return response
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=80, debug=True) #, ssl_context=context
+	app.run(host='0.0.0.0', port=int(s.server_port), debug=True) #, ssl_context=context
 
 

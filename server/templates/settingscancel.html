@@ -1,8 +1,32 @@
 {% extends 'header.html' %}
 {% block title %}Close account{% endblock %}
+{% block javascript %}
+<script>
+$(document).ready(function(){
+	$('#submit').click(function(){
+		var closeob = new Object();
+		closeob.password = $('#password').val();
+		var redirect = function(data){
+			if(data.data == 'account deleted'){
+				window.location.assign('/{{ settings['username'] }}/settings/accountclosed')
+			}
+		}
+		$.ajax({
+			url:"http://{{ settings['server'] }}/{{settings['username'] }}/settings/closeaccount",
+			type:"POST",
+			dataType:'json',
+			contentType: 'application/json',
+			data:JSON.stringify(closeob),
+			success:redirect
+		});
+	});
+});
+</script>
+{% endblock %}
 {% block content %}
 To confirm account deletion please enter your password below:
 <table>
 <tr><td>Password:</td><td><input type='password' id='password'></td></tr>
 <tr><td></td><td><input type='submit' value='Submit' id='submit'></td></tr>
 </table>
+{% endblock %}

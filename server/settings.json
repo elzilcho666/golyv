@@ -1,1 +1,1 @@
-{"ip":"127.0.0.1", "port":"3306", "user":"root", "password":"r00tb4rk", "db":"golyv", "sslkey":"key/server.key", "sslcert":"key/server.crt"}
+{"ip":"127.0.0.1", "port":"3306", "user":"root", "password":"r00tb4rk", "db":"golyv", "sslkey":"key/server.key", "sslcert":"key/server.crt", "url":"192.168.1.77", "ssl":"False", "www_port":80}
